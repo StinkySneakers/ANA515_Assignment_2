@@ -1,0 +1,50 @@
+---
+title: "ANA 515 Assignment 2"
+author: "Shuang Xia"
+date: "2023"
+output:
+  html_document:
+    theme:
+      bootswatch: solar
+---
+
+The dataset I'm using is titled "State of the State" and provides a comprehensive breakdown of speeches from governors across all 50 U.S. states. It was collected by transcribing these speeches and categorizing into various themes like economy/fiscal issues, education, health care, etc. It is useful for research of understanding the common themes and priorities in these speeches, and the differences in focus between Democratic and Republican governors.
+The dataset is in a flat-file format, stored as CSV and TXT files. CSV files are delimited by comma. The CSV files, index.csv and words.csv, contain structured data. The index.csv file includes information about each state's governor and a link to the source of the speech. The words.csv file contains every one-word phrase mentioned in at least 10 speeches and every two- or three-word phrase mentioned in at least five speeches, along with the results of a chi^2 test that shows the statistical significance of and associated p-value of phrases.
+The speeches/ folder contains 50 TXT files, one for each state, which hold the unstructured text data of the speeches.
+
+```{r include=FALSE}
+library(dplyr)
+library(knitr)
+```
+
+
+```{r}
+# using read.csv to read data from csv file from a URL, 
+url <- "https://raw.githubusercontent.com/fivethirtyeight/data/master/state-of-the-state/words.csv"
+words <- read.csv(url)
+```
+
+```{r results='hide'}
+# get rid of chi2 and pval columns
+basic <- subset(words, select = -c(chi2, pval))
+# sort by total speeches
+arrange(basic, total)
+```
+
+This dataframe has `r nrow(basic)` rows and `r ncol(basic)` columns. The names of the columns and a brief description of each are in the table below:
+
+```{r results = TRUE}
+columns_summary <- data.frame(Columns = c(colnames(basic)), Description = c("Phrase from the speeches", "Theme of the phrase", "Count in Democratic speeches", "Count in Republican speeches", "Total count of speeches", "Percentage in Democratic speeches", "Percentage in Republican speeches"))
+kable(columns_summary, caption = "State of the States")
+```
+
+```{r include=TRUE}
+speeches<-select(words, phrase, d_speeches, r_speeches)
+
+Summarytable<-summary(speeches) #creates the summary
+
+na_count <- sapply(speeches, function(x) sum(is.na(x)))
+Summarytable<-rbind(Summarytable, 'Number of NAs' = na_count)
+
+Summarytable #prints the summary in your output
+```
